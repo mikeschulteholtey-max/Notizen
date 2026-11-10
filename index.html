@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notizen</title>
+<meta name="theme-color" content="#0b6e7f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root {
+  --bg: #f3f6f7; --surface: #ffffff; --fg: #14242b; --muted: #56686f; --line: #d3dde0;
+  --accent: #0b6e7f; --accent-fg: #ffffff; --accent-soft: #dcefF2;
+  --ok: #1d6b3f; --ok-soft: #dff1e5; --warn: #8a4b00; --warn-soft: #fbeed6; --bad: #a1271f; --bad-soft: #fbe3e0;
+  --c-mangel: #c2362b; --c-aufgabe: #b06400; --c-notiz: #2b62c4; --tone-fg: #ffffff;
+  --accent-privat: #7a3e9d; --accent-privat-soft: #efe2f7;
+  --shadow: 0 6px 20px rgba(20, 50, 60, 0.10);
+  --font: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1a1e; --surface: #17262c; --fg: #e6eef0; --muted: #9db0b6; --line: #2b3f46;
+    --accent: #4fc3d4; --accent-fg: #06262c; --accent-soft: #17383f;
+    --ok: #7fd6a0; --ok-soft: #173426; --warn: #f0bf6c; --warn-soft: #3a2c12; --bad: #f29a92; --bad-soft: #3d1c19;
+    --c-mangel: #f08a80; --c-aufgabe: #f0b860; --c-notiz: #86adf5; --tone-fg: #10181b;
+    --accent-privat: #cfa3ec; --accent-privat-soft: #33203f;
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font); font-size: 16px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+}
+.page { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+.page[data-mode="privat"] { --accent: var(--accent-privat); --accent-soft: var(--accent-privat-soft); }
+header { background: var(--accent); color: var(--accent-fg); border-radius: 16px; padding: 18px 18px 16px; box-shadow: var(--shadow); transition: background-color 0.2s; }
+h1 { font-weight: 600; font-size: 1.55rem; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-weight: 600; font-size: 1.05rem; margin: 0; }
+.sub { margin: 4px 0 0; font-size: 0.92rem; opacity: 0.88; }
+form { display: flex; flex-direction: column; gap: 16px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); }
+.group { display: flex; flex-direction: column; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+label, legend { font-weight: 600; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 0; }
+fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+input[type="text"], input[type="url"], textarea {
+  width: 100%; font: inherit; color: var(--fg); background: var(--bg);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 13px 14px;
+}
+textarea { min-height: 132px; resize: vertical; }
+input:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible, .seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.seg.two { grid-template-columns: repeat(2, 1fr); }
+.seg label { text-transform: none; letter-spacing: 0; font-size: 1rem; color: var(--fg); position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; }
+.seg span { display: block; text-align: center; padding: 12px 6px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); font-weight: 500; }
+.seg input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14); }
+#art-mangel:checked + span { background: var(--c-mangel); border-color: var(--c-mangel); color: var(--tone-fg); }
+#art-aufgabe:checked + span { background: var(--c-aufgabe); border-color: var(--c-aufgabe); color: var(--tone-fg); }
+#art-notiz:checked + span { background: var(--c-notiz); border-color: var(--c-notiz); color: var(--tone-fg); }
+.hint { color: var(--muted); font-size: 0.86rem; margin: 0; }
+button { font: inherit; cursor: pointer; }
+.primary { background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 12px; padding: 16px; font-weight: 600; font-size: 1.08rem; width: 100%; box-shadow: var(--shadow); transition: background-color 0.2s; }
+.ghost { background: none; color: var(--accent); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 14px; font-weight: 600; font-size: 0.92rem; }
+.ghost:disabled { opacity: 0.55; cursor: default; }
+.mic { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; }
+.mic .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.mic[aria-pressed="true"] { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+.mic[aria-pressed="true"] .dot { background: var(--bad); animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: 0.25; } }
+.msg { border-radius: 10px; padding: 12px 14px; font-size: 0.95rem; margin: 0; overflow-wrap: anywhere; }
+.msg.ok { background: var(--ok-soft); color: var(--ok); }
+.msg.warn { background: var(--warn-soft); color: var(--warn); }
+.msg.bad { background: var(--bad-soft); color: var(--bad); }
+.queue { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.queue p { margin: 0; flex: 1 1 200px; }
+.block { display: flex; flex-direction: column; gap: 12px; border-top: 1.5px solid var(--line); padding-top: 20px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+li { background: var(--surface); border: 1.5px solid var(--line); border-left: 5px solid var(--accent); border-radius: 10px; padding: 11px 13px; min-width: 0; }
+li.t-mangel { border-left-color: var(--c-mangel); }
+li.t-aufgabe { border-left-color: var(--c-aufgabe); }
+li.t-notiz { border-left-color: var(--c-notiz); }
+.meta { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 0.84rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pill { background: var(--accent); color: var(--accent-fg); border-radius: 999px; padding: 1px 9px; font-weight: 600; font-size: 0.78rem; }
+li.t-mangel .pill { background: var(--c-mangel); color: var(--tone-fg); }
+li.t-aufgabe .pill { background: var(--c-aufgabe); color: var(--tone-fg); }
+li.t-notiz .pill { background: var(--c-notiz); color: var(--tone-fg); }
+.obj { font-weight: 600; color: var(--fg); }
+.txt { margin: 4px 0 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+details { border-top: 1.5px solid var(--line); padding-top: 16px; }
+summary { font-weight: 600; cursor: pointer; padding: 4px 0; }
+details .group { margin-top: 12px; }
+@media (prefers-reduced-motion: reduce) { header, .primary { transition: none; } .mic[aria-pressed="true"] .dot { animation: none; } }
+</style>
+</head>
+<body>
+<div class="page" id="page" data-mode="beruflich">
+  <header>
+    <h1>Notizen</h1>
+    <p class="sub" id="sub">Eintrag landet in deiner Google-Tabelle.</p>
+  </header>
+
+  <form id="entry-form" novalidate>
+    <fieldset>
+      <legend>Bereich</legend>
+      <div class="seg two">
+        <label><input type="radio" name="bereich" id="bereich-beruflich" value="beruflich" checked><span>Beruflich</span></label>
+        <label><input type="radio" name="bereich" id="bereich-privat" value="privat"><span>Privat</span></label>
+      </div>
+    </fieldset>
+
+    <div class="group" id="beruf-felder">
+      <fieldset>
+        <legend>Art</legend>
+        <div class="seg">
+          <label><input type="radio" name="art" id="art-mangel" value="Mangel" checked><span>Mangel</span></label>
+          <label><input type="radio" name="art" id="art-aufgabe" value="Aufgabe"><span>Aufgabe</span></label>
+          <label><input type="radio" name="art" id="art-notiz" value="Notiz"><span>Notiz</span></label>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="objekt">Objekt</label>
+        <input type="text" id="objekt" list="objekt-liste" autocomplete="off" placeholder="z. B. Feuerwache Krefeld">
+        <datalist id="objekt-liste"></datalist>
+      </div>
+    </div>
+
+    <div class="group" id="privat-felder" hidden>
+      <fieldset>
+        <legend>Untersparte</legend>
+        <div class="seg">
+          <label><input type="radio" name="sparte" id="sparte-einkauf" value="Einkauf" checked><span>Einkauf</span></label>
+          <label><input type="radio" name="sparte" id="sparte-haushalt" value="Haushalt"><span>Haushalt</span></label>
+          <label><input type="radio" name="sparte" id="sparte-termine" value="Termine"><span>Termine</span></label>
+          <label><input type="radio" name="sparte" id="sparte-ginlampe" value="Ginlampe"><span>Ginlampe</span></label>
+          <label><input type="radio" name="sparte" id="sparte-ideen" value="Ideen"><span>Ideen</span></label>
+          <label><input type="radio" name="sparte" id="sparte-sonstiges" value="Sonstiges"><span>Sonstiges</span></label>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="field">
+      <label for="text">Beschreibung</label>
+      <textarea id="text" placeholder="z. B. Treppenhaus 2. OG nicht gewischt"></textarea>
+      <button class="ghost mic" type="button" id="mic" aria-pressed="false" hidden><span class="dot"></span><span id="mic-label">Diktieren</span></button>
+    </div>
+
+    <button class="primary" type="submit" id="save">Speichern</button>
+    <p class="msg" id="msg" role="status" hidden></p>
+    <div class="msg warn queue" id="queue" hidden>
+      <p id="queue-text"></p>
+      <button class="ghost" type="button" id="queue-send">Jetzt übertragen</button>
+    </div>
+  </form>
+
+  <section class="block" aria-labelledby="recent-h">
+    <div class="row">
+      <h2 id="recent-h">Letzte Einträge</h2>
+      <button class="ghost" type="button" id="reload">Anzeigen</button>
+    </div>
+    <p class="hint" id="recent-empty"></p>
+    <ul id="recent-list" hidden></ul>
+  </section>
+
+  <details id="setup">
+    <summary>Einrichtung</summary>
+    <div class="group">
+      <div class="field">
+        <label for="url">Adresse des Google-Skripts</label>
+        <input type="url" id="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
+        <p class="hint">Einmal pro Gerät einfügen. Sie bleibt nur auf diesem Gerät gespeichert.</p>
+      </div>
+      <button class="ghost" type="button" id="url-save">Speichern und Verbindung testen</button>
+      <p class="msg" id="setup-msg" role="status" hidden></p>
+    </div>
+  </details>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $("entry-form"), objekt = $("objekt"), text = $("text"), msg = $("msg");
+  var reloadBtn = $("reload"), list = $("recent-list"), empty = $("recent-empty"), datalist = $("objekt-liste");
+  var queueBox = $("queue"), queueText = $("queue-text"), queueSend = $("queue-send");
+  var urlInput = $("url"), setupMsg = $("setup-msg"), setup = $("setup"), mic = $("mic");
+
+  function store(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function loadJson(k) { try { var v = JSON.parse(load(k) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  function show(el, kind, t) { el.className = "msg " + kind; el.textContent = t; el.hidden = false; }
+
+  var endpoint = load("mua.url") || "";
+  var queue = loadJson("mua.queue");
+  var recentObjects = loadJson("mua.objekte");
+  var sending = false;
+
+  function renderObjects() {
+    datalist.textContent = "";
+    recentObjects.forEach(function (o) { var opt = document.createElement("option"); opt.value = o; datalist.appendChild(opt); });
+  }
+  function rememberObject(o) {
+    if (!o) return;
+    recentObjects = [o].concat(recentObjects.filter(function (x) { return x !== o; })).slice(0, 60);
+    store("mua.objekte", JSON.stringify(recentObjects)); renderObjects();
+  }
+  renderObjects();
+
+  var draft = load("mua.entwurf"); if (draft) text.value = draft;
+  var lastObj = load("mua.objekt"); if (lastObj) objekt.value = lastObj;
+  text.addEventListener("input", function () { store("mua.entwurf", text.value); });
+  objekt.addEventListener("input", function () { store("mua.objekt", objekt.value); });
+
+  function checked(name, fallback) { var el = form.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : fallback; }
+  function mode() { return checked("bereich", "beruflich"); }
+  function applyMode() {
+    var privat = mode() === "privat";
+    $("beruf-felder").hidden = privat; $("privat-felder").hidden = !privat;
+    $("page").setAttribute("data-mode", mode());
+    text.placeholder = privat ? "z. B. Geschenk für Samstag besorgen" : "z. B. Treppenhaus 2. OG nicht gewischt";
+    store("mua.bereich", mode());
+    list.textContent = ""; list.hidden = true; empty.hidden = false;
+    empty.textContent = endpoint
+      ? "Tippe auf „Anzeigen“ für die letzten fünf Einträge aus „" + (privat ? "Privat" : "Beruflich") + "“."
+      : "Noch nicht mit der Tabelle verbunden. Trag unten bei „Einrichtung“ die Adresse des Google-Skripts ein.";
+    reloadBtn.textContent = "Anzeigen";
+  }
+  if (load("mua.bereich") === "privat") $("bereich-privat").checked = true;
+  form.querySelectorAll('input[name="bereich"]').forEach(function (el) { el.addEventListener("change", applyMode); });
+  applyMode();
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function stamp() { var d = new Date(); return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "." + d.getFullYear() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+  function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+
+  function renderQueue(note) {
+    if (!queue.length) { queueBox.hidden = true; return; }
+    var n = queue.length;
+    queueText.textContent = (n === 1 ? "1 Eintrag wartet" : n + " Einträge warten") + " auf die Übertragung. " + (note || "");
+    queueSend.hidden = !endpoint;
+    queueBox.hidden = false;
+  }
+  function saveQueue() { return store("mua.queue", JSON.stringify(queue)); }
+
+  function post(entry) {
+    return fetch(endpoint, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "add", entry: entry }), redirect: "follow" })
+      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); });
+  }
+
+  // Überträgt wartende Einträge der Reihe nach. Ein Eintrag verlässt die Warteliste erst nach der Bestätigung der Tabelle.
+  function flush(announce) {
+    if (sending || !queue.length) return;
+    if (!endpoint) { renderQueue("Verbinde die App unten bei „Einrichtung“ mit der Tabelle."); return; }
+    if (navigator.onLine === false) { renderQueue("Kein Netz. Die App überträgt, sobald du wieder online bist."); return; }
+    sending = true; queueSend.disabled = true;
+    var sent = 0;
+    (function next() {
+      if (!queue.length) return done(null);
+      post(queue[0]).then(function (r) {
+        if (!r || !r.ok) return done((r && r.error) || "Die Tabelle hat den Eintrag abgelehnt.");
+        queue.shift(); saveQueue(); sent++; next();
+      }, function () { done("Keine Verbindung zur Tabelle. Die App versucht es später erneut."); });
+    })();
+    function done(error) {
+      sending = false; queueSend.disabled = false;
+      renderQueue(error || "");
+      if (error) { if (announce) show(msg, "warn", error + " Der Eintrag bleibt auf dem Gerät gespeichert."); }
+      else if (sent) { show(msg, "ok", sent === 1 ? "In der Tabelle gespeichert." : sent + " Einträge in der Tabelle gespeichert."); loadRecent(true); }
+    }
+  }
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var desc = text.value.trim();
+    if (!desc) { show(msg, "warn", "Die Beschreibung fehlt noch."); text.focus(); return; }
+    var privat = mode() === "privat";
+    var obj = privat ? "" : objekt.value.trim();
+    var entry = { id: newId(), bereich: mode(), datum: stamp(), art: privat ? checked("sparte", "Sonstiges") : checked("art", "Mangel"), objekt: obj, text: desc };
+    queue.push(entry);
+    if (!saveQueue() && !endpoint) { queue.pop(); show(msg, "bad", "Dieses Gerät lässt kein Speichern zu und die Tabelle ist noch nicht verbunden. Der Text bleibt im Feld stehen."); return; }
+    text.value = ""; store("mua.entwurf", ""); rememberObject(obj);
+    show(msg, "ok", "Auf dem Gerät gespeichert, wird übertragen …");
+    renderQueue(""); flush(true);
+  });
+  queueSend.addEventListener("click", function () { flush(true); });
+  window.addEventListener("online", function () { flush(false); });
+
+  function renderRecent(rows, privat) {
+    list.textContent = "";
+    if (!rows.length) { list.hidden = true; empty.hidden = false; empty.textContent = "In diesem Bereich gibt es noch keine Einträge."; return; }
+    rows.forEach(function (r) {
+      var c = privat ? [r[0], null, r[1], r[2], r[3]] : r;
+      var li = document.createElement("li");
+      var tone = String(c[2] || "").toLowerCase();
+      if (tone === "mangel" || tone === "aufgabe" || tone === "notiz") li.className = "t-" + tone;
+      var meta = document.createElement("div"); meta.className = "meta";
+      var pill = document.createElement("span"); pill.className = "pill"; pill.textContent = c[2] || "Eintrag"; meta.appendChild(pill);
+      if (c[1] !== null) { var o = document.createElement("span"); o.className = "obj"; o.textContent = c[1] || "ohne Objekt"; meta.appendChild(o); }
+      var when = document.createElement("span"); when.textContent = c[0] || ""; meta.appendChild(when);
+      if (c[4]) { var st = document.createElement("span"); st.textContent = c[4]; meta.appendChild(st); }
+      var p = document.createElement("p"); p.className = "txt"; p.textContent = c[3] || "";
+      li.appendChild(meta); li.appendChild(p); list.appendChild(li);
+    });
+    empty.hidden = true; list.hidden = false;
+  }
+
+  function loadRecent(quiet) {
+    if (!endpoint) { if (!quiet) { setup.open = true; urlInput.focus(); } return; }
+    var privat = mode() === "privat";
+    reloadBtn.disabled = true;
+    fetch(endpoint + "?bereich=" + mode(), { redirect: "follow" })
+      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+      .then(function (r) {
+        if ((mode() === "privat") !== privat) return;
+        if (!r || !r.ok) throw new Error((r && r.error) || "Fehler");
+        renderRecent(Array.isArray(r.rows) ? r.rows : [], privat);
+        reloadBtn.textContent = "Neu laden";
+      })
+      .catch(function (e) { if (!quiet) { list.hidden = true; empty.hidden = false; empty.textContent = "Die Liste ließ sich nicht laden (" + (e && e.message || "keine Verbindung") + ")."; } })
+      .then(function () { reloadBtn.disabled = false; });
+  }
+  reloadBtn.addEventListener("click", function () { loadRecent(false); });
+
+  // Einrichtung: Adresse des Google-Skripts prüfen und merken.
+  urlInput.value = endpoint;
+  if (!endpoint) setup.open = true;
+  $("url-save").addEventListener("click", function () {
+    var u = urlInput.value.trim();
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u)) {
+      show(setupMsg, "bad", "Das ist nicht die richtige Adresse. Sie beginnt mit https://script.google.com/macros/s/ und endet auf /exec."); return;
+    }
+    show(setupMsg, "warn", "Verbindung wird geprüft …");
+    fetch(u + "?ping=1", { redirect: "follow" })
+      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+      .then(function (r) {
+        if (!r || !r.ok) throw new Error("Antwort unklar");
+        endpoint = u; store("mua.url", u);
+        show(setupMsg, "ok", "Verbunden mit der Tabelle „" + (r.name || "ohne Namen") + "“.");
+        applyMode(); renderQueue(""); flush(true);
+      })
+      .catch(function () { show(setupMsg, "bad", "Keine Antwort von dieser Adresse. Prüfe, ob beim Bereitstellen „Zugriff: Jeder“ gewählt ist und ob die Adresse vollständig kopiert wurde."); });
+  });
+
+  // Diktieren, wo der Browser es anbietet (Chrome auf Android und Windows).
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    mic.hidden = false;
+    var rec = null, base = "";
+    mic.addEventListener("click", function () {
+      if (rec) { rec.stop(); return; }
+      rec = new SR(); rec.lang = "de-DE"; rec.interimResults = true; rec.continuous = true;
+      base = text.value ? text.value.replace(/\s+$/, "") + " " : "";
+      rec.onresult = function (ev) {
+        var t = ""; for (var i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript;
+        text.value = base + t.replace(/^\s+/, ""); store("mua.entwurf", text.value);
+      };
+      rec.onerror = function (ev) {
+        if (ev.error === "not-allowed" || ev.error === "service-not-allowed") show(msg, "warn", "Das Mikrofon ist für diese App nicht erlaubt. Erlaube es in den Seiteneinstellungen des Browsers.");
+      };
+      rec.onend = function () { rec = null; mic.setAttribute("aria-pressed", "false"); $("mic-label").textContent = "Diktieren"; };
+      try { rec.start(); mic.setAttribute("aria-pressed", "true"); $("mic-label").textContent = "Stopp"; } catch (e) { rec = null; }
+    });
+  }
+
+  renderQueue(""); flush(false);
+  if ("serviceWorker" in navigator) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); }); }
+})();
+</script>
+</body>
+</html>
