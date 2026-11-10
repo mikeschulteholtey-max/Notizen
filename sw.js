@@ -1,5 +1,5 @@
 // Hält die App-Dateien auf dem Gerät vor, damit sie auch ohne Netz startet.
-const CACHE = "notizen-v1";
+const CACHE = "notizen-v2";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));

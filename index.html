@@ -9,11 +9,14 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
+/* Aufbau: Kopfband mit Zähler, Bereichs-Umschalter, einklappbare Eingabe, darunter die offene Liste mit Haken, Filter-Chips und der Abschnitt "Erledigt". */
 :root {
   --bg: #f3f6f7; --surface: #ffffff; --fg: #14242b; --muted: #56686f; --line: #d3dde0;
   --accent: #0b6e7f; --accent-fg: #ffffff; --accent-soft: #dcefF2;
   --ok: #1d6b3f; --ok-soft: #dff1e5; --warn: #8a4b00; --warn-soft: #fbeed6; --bad: #a1271f; --bad-soft: #fbe3e0;
-  --c-mangel: #c2362b; --c-aufgabe: #b06400; --c-notiz: #2b62c4; --tone-fg: #ffffff;
+  --c-mangel: #c2362b; --c-aufgabe: #b06400; --c-notiz: #2b62c4;
+  --c-einkauf: #1f7a45; --c-haushalt: #0b6e7f; --c-termine: #2b62c4; --c-ginlampe: #946400; --c-ideen: #7a3e9d; --c-sonstiges: #5b6b73;
+  --tone-fg: #ffffff;
   --accent-privat: #7a3e9d; --accent-privat-soft: #efe2f7;
   --shadow: 0 6px 20px rgba(20, 50, 60, 0.10);
   --font: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
@@ -24,7 +27,9 @@
     --bg: #0f1a1e; --surface: #17262c; --fg: #e6eef0; --muted: #9db0b6; --line: #2b3f46;
     --accent: #4fc3d4; --accent-fg: #06262c; --accent-soft: #17383f;
     --ok: #7fd6a0; --ok-soft: #173426; --warn: #f0bf6c; --warn-soft: #3a2c12; --bad: #f29a92; --bad-soft: #3d1c19;
-    --c-mangel: #f08a80; --c-aufgabe: #f0b860; --c-notiz: #86adf5; --tone-fg: #10181b;
+    --c-mangel: #f08a80; --c-aufgabe: #f0b860; --c-notiz: #86adf5;
+    --c-einkauf: #7fd6a0; --c-haushalt: #4fc3d4; --c-termine: #86adf5; --c-ginlampe: #e6c35c; --c-ideen: #cfa3ec; --c-sonstiges: #a9b8be;
+    --tone-fg: #10181b;
     --accent-privat: #cfa3ec; --accent-privat-soft: #33203f;
     --shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
     color-scheme: dark;
@@ -38,37 +43,41 @@ body {
   font-family: var(--font); font-size: 16px; line-height: 1.45;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 20px 40px;
+  padding-block: 16px 48px;
 }
-.page { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+.page { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 .page[data-mode="privat"] { --accent: var(--accent-privat); --accent-soft: var(--accent-privat-soft); }
-header { background: var(--accent); color: var(--accent-fg); border-radius: 16px; padding: 18px 18px 16px; box-shadow: var(--shadow); transition: background-color 0.2s; }
-h1 { font-weight: 600; font-size: 1.55rem; line-height: 1.15; margin: 0; text-wrap: balance; }
-h2 { font-weight: 600; font-size: 1.05rem; margin: 0; }
-.sub { margin: 4px 0 0; font-size: 0.92rem; opacity: 0.88; }
-form { display: flex; flex-direction: column; gap: 16px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); }
-.group { display: flex; flex-direction: column; gap: 16px; }
-.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+header { background: var(--accent); color: var(--accent-fg); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow); transition: background-color 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+h1 { font-weight: 600; font-size: 1.5rem; line-height: 1.15; margin: 0; }
+h2 { font-weight: 600; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.sub { margin: 2px 0 0; font-size: 0.9rem; opacity: 0.9; font-variant-numeric: tabular-nums; }
+.icon-btn { background: none; border: 1.5px solid currentColor; color: inherit; border-radius: 50%; width: 42px; height: 42px; flex: none; font-size: 1.25rem; line-height: 1; opacity: 0.9; }
+.icon-btn.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+button { font: inherit; cursor: pointer; }
 label, legend { font-weight: 600; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 0; }
 fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-input[type="text"], input[type="url"], textarea {
-  width: 100%; font: inherit; color: var(--fg); background: var(--bg);
-  border: 1.5px solid var(--line); border-radius: 10px; padding: 13px 14px;
-}
-textarea { min-height: 132px; resize: vertical; }
-input:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible, .seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+.group { display: flex; flex-direction: column; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+input[type="text"], input[type="url"], textarea { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 13px 14px; }
+textarea { min-height: 112px; resize: vertical; }
+input:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible, .body:focus-visible, .seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
 .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .seg.two { grid-template-columns: repeat(2, 1fr); }
 .seg label { text-transform: none; letter-spacing: 0; font-size: 1rem; color: var(--fg); position: relative; }
 .seg input { position: absolute; opacity: 0; inset: 0; }
-.seg span { display: block; text-align: center; padding: 12px 6px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); font-weight: 500; }
-.seg input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14); }
-#art-mangel:checked + span { background: var(--c-mangel); border-color: var(--c-mangel); color: var(--tone-fg); }
-#art-aufgabe:checked + span { background: var(--c-aufgabe); border-color: var(--c-aufgabe); color: var(--tone-fg); }
-#art-notiz:checked + span { background: var(--c-notiz); border-color: var(--c-notiz); color: var(--tone-fg); }
-.hint { color: var(--muted); font-size: 0.86rem; margin: 0; }
-button { font: inherit; cursor: pointer; }
-.primary { background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 12px; padding: 16px; font-weight: 600; font-size: 1.08rem; width: 100%; box-shadow: var(--shadow); transition: background-color 0.2s; }
+.seg span { display: block; text-align: center; padding: 11px 6px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); font-weight: 500; }
+.seg input:checked + span { background: var(--tone, var(--accent)); border-color: var(--tone, var(--accent)); color: var(--tone-fg); font-weight: 600; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14); }
+.seg.two input:checked + span { color: var(--accent-fg); }
+.card { background: var(--surface); border: 1.5px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+#composer > summary { list-style: none; padding: 15px 16px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 10px; cursor: pointer; }
+#composer > summary::-webkit-details-marker { display: none; }
+#composer > summary .plus { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); display: inline-flex; align-items: center; justify-content: center; font-size: 1.3rem; line-height: 1; flex: none; transition: transform 0.2s; }
+#composer[open] > summary .plus { transform: rotate(45deg); }
+#composer form { display: flex; flex-direction: column; gap: 16px; padding: 4px 16px 16px; }
+#composer .seg span { background: var(--bg); }
+#composer .seg input:checked + span { background: var(--tone, var(--accent)); }
+.primary { background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 12px; padding: 15px; font-weight: 600; font-size: 1.05rem; width: 100%; box-shadow: var(--shadow); transition: background-color 0.2s; }
 .ghost { background: none; color: var(--accent); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 14px; font-weight: 600; font-size: 0.92rem; }
 .ghost:disabled { opacity: 0.55; cursor: default; }
 .mic { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; }
@@ -76,102 +85,126 @@ button { font: inherit; cursor: pointer; }
 .mic[aria-pressed="true"] { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
 .mic[aria-pressed="true"] .dot { background: var(--bad); animation: pulse 1s infinite; }
 @keyframes pulse { 50% { opacity: 0.25; } }
-.msg { border-radius: 10px; padding: 12px 14px; font-size: 0.95rem; margin: 0; overflow-wrap: anywhere; }
+.hint { color: var(--muted); font-size: 0.88rem; margin: 0; }
+.msg { border-radius: 10px; padding: 11px 14px; font-size: 0.93rem; margin: 0; overflow-wrap: anywhere; }
 .msg.ok { background: var(--ok-soft); color: var(--ok); }
 .msg.warn { background: var(--warn-soft); color: var(--warn); }
 .msg.bad { background: var(--bad-soft); color: var(--bad); }
 .queue { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .queue p { margin: 0; flex: 1 1 200px; }
-.block { display: flex; flex-direction: column; gap: 12px; border-top: 1.5px solid var(--line); padding-top: 20px; }
-.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-li { background: var(--surface); border: 1.5px solid var(--line); border-left: 5px solid var(--accent); border-radius: 10px; padding: 11px 13px; min-width: 0; }
-li.t-mangel { border-left-color: var(--c-mangel); }
-li.t-aufgabe { border-left-color: var(--c-aufgabe); }
-li.t-notiz { border-left-color: var(--c-notiz); }
-.meta { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 0.84rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-.pill { background: var(--accent); color: var(--accent-fg); border-radius: 999px; padding: 1px 9px; font-weight: 600; font-size: 0.78rem; }
-li.t-mangel .pill { background: var(--c-mangel); color: var(--tone-fg); }
-li.t-aufgabe .pill { background: var(--c-aufgabe); color: var(--tone-fg); }
-li.t-notiz .pill { background: var(--c-notiz); color: var(--tone-fg); }
-.obj { font-weight: 600; color: var(--fg); }
-.txt { margin: 4px 0 0; overflow-wrap: anywhere; white-space: pre-wrap; }
-details { border-top: 1.5px solid var(--line); padding-top: 16px; }
-summary { font-weight: 600; cursor: pointer; padding: 4px 0; }
-details .group { margin-top: 12px; }
-@media (prefers-reduced-motion: reduce) { header, .primary { transition: none; } .mic[aria-pressed="true"] .dot { animation: none; } }
+/* Töne je Art und Untersparte */
+.item { --tone: var(--accent); }
+.t-mangel { --tone: var(--c-mangel); } .t-aufgabe { --tone: var(--c-aufgabe); } .t-notiz { --tone: var(--c-notiz); }
+.t-einkauf { --tone: var(--c-einkauf); } .t-haushalt { --tone: var(--c-haushalt); } .t-termine { --tone: var(--c-termine); }
+.t-ginlampe { --tone: var(--c-ginlampe); } .t-ideen { --tone: var(--c-ideen); } .t-sonstiges { --tone: var(--c-sonstiges); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 7px; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 12px; font-size: 0.9rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.chip .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--tone, var(--accent)); }
+.chip .n { color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--tone, var(--accent)); border-color: var(--tone, var(--accent)); color: var(--tone-fg); font-weight: 600; }
+.chip[aria-pressed="true"] .dot { background: var(--tone-fg); }
+.chip[aria-pressed="true"] .n { color: inherit; opacity: 0.85; }
+.page:not([data-mode="privat"]) .chip.all[aria-pressed="true"], .page[data-mode="privat"] .chip.all[aria-pressed="true"] { color: var(--accent-fg); }
+.chip.all[aria-pressed="true"] .dot { background: var(--accent-fg); }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.item { display: flex; align-items: flex-start; gap: 4px; background: var(--surface); border: 1.5px solid var(--line); border-left: 5px solid var(--tone); border-radius: 12px; min-width: 0; }
+.check { flex: none; width: 48px; height: 48px; background: none; border: 0; display: flex; align-items: center; justify-content: center; padding: 0; }
+.check i { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--tone); display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 0.95rem; font-weight: 700; color: transparent; transition: background-color 0.15s; }
+.check[aria-pressed="true"] i { background: var(--tone); color: var(--tone-fg); }
+.check:disabled { cursor: default; }
+.check:disabled i { border-style: dashed; opacity: 0.6; }
+.body { flex: 1; min-width: 0; padding: 10px 12px 10px 0; cursor: pointer; }
+.meta { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 0.84rem; color: var(--muted); }
+.pill { background: var(--tone); color: var(--tone-fg); border-radius: 999px; padding: 1px 9px; font-weight: 600; font-size: 0.76rem; }
+.obj { font-weight: 600; color: var(--fg); overflow-wrap: anywhere; }
+.txt { margin: 3px 0 0; overflow-wrap: anywhere; white-space: pre-wrap; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.more { margin: 8px 0 0; font-size: 0.84rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.item.open .txt { display: block; overflow: visible; }
+.item.done .txt, .item.done .obj { text-decoration: line-through; color: var(--muted); }
+.item.done { border-left-color: var(--line); }
+.item.done .pill { background: var(--line); color: var(--muted); }
+.item.done .check i { border-color: var(--muted); background: var(--muted); color: var(--surface); }
+.empty { text-align: center; padding: 22px 16px; border: 1.5px dashed var(--line); border-radius: 12px; color: var(--muted); margin: 0; }
+details.plain { border-top: 1.5px solid var(--line); padding-top: 14px; }
+details.plain > summary { font-weight: 600; cursor: pointer; padding: 4px 0; color: var(--muted); }
+details.plain > ul, details.plain > .group { margin-top: 12px; }
+@media (prefers-reduced-motion: reduce) { header, .primary, .check i, #composer > summary .plus { transition: none; } .mic[aria-pressed="true"] .dot, .icon-btn.spin { animation: none; } }
 </style>
 </head>
 <body>
 <div class="page" id="page" data-mode="beruflich">
   <header>
-    <h1>Notizen</h1>
-    <p class="sub" id="sub">Eintrag landet in deiner Google-Tabelle.</p>
+    <div>
+      <h1>Notizen</h1>
+      <p class="sub" id="sub">&nbsp;</p>
+    </div>
+    <button class="icon-btn" type="button" id="reload" aria-label="Liste neu laden">↻</button>
   </header>
 
-  <form id="entry-form" novalidate>
-    <fieldset>
-      <legend>Bereich</legend>
-      <div class="seg two">
-        <label><input type="radio" name="bereich" id="bereich-beruflich" value="beruflich" checked><span>Beruflich</span></label>
-        <label><input type="radio" name="bereich" id="bereich-privat" value="privat"><span>Privat</span></label>
-      </div>
-    </fieldset>
+  <div class="seg two" role="radiogroup" aria-label="Bereich">
+    <label><input type="radio" name="bereich" id="bereich-beruflich" value="beruflich" checked><span>Beruflich</span></label>
+    <label><input type="radio" name="bereich" id="bereich-privat" value="privat"><span>Privat</span></label>
+  </div>
 
-    <div class="group" id="beruf-felder">
-      <fieldset>
-        <legend>Art</legend>
-        <div class="seg">
-          <label><input type="radio" name="art" id="art-mangel" value="Mangel" checked><span>Mangel</span></label>
-          <label><input type="radio" name="art" id="art-aufgabe" value="Aufgabe"><span>Aufgabe</span></label>
-          <label><input type="radio" name="art" id="art-notiz" value="Notiz"><span>Notiz</span></label>
+  <details class="card" id="composer">
+    <summary><span class="plus">+</span><span>Neuer Eintrag</span></summary>
+    <form id="entry-form" novalidate>
+      <div class="group" id="beruf-felder">
+        <fieldset>
+          <legend>Art</legend>
+          <div class="seg">
+            <label class="t-mangel"><input type="radio" name="art" id="art-mangel" value="Mangel" checked><span>Mangel</span></label>
+            <label class="t-aufgabe"><input type="radio" name="art" id="art-aufgabe" value="Aufgabe"><span>Aufgabe</span></label>
+            <label class="t-notiz"><input type="radio" name="art" id="art-notiz" value="Notiz"><span>Notiz</span></label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="objekt">Objekt</label>
+          <input type="text" id="objekt" list="objekt-liste" autocomplete="off" placeholder="z. B. Feuerwache Krefeld">
+          <datalist id="objekt-liste"></datalist>
         </div>
-      </fieldset>
+      </div>
+      <div class="group" id="privat-felder" hidden>
+        <fieldset>
+          <legend>Untersparte</legend>
+          <div class="seg">
+            <label class="t-einkauf"><input type="radio" name="sparte" id="sparte-einkauf" value="Einkauf" checked><span>Einkauf</span></label>
+            <label class="t-haushalt"><input type="radio" name="sparte" id="sparte-haushalt" value="Haushalt"><span>Haushalt</span></label>
+            <label class="t-termine"><input type="radio" name="sparte" id="sparte-termine" value="Termine"><span>Termine</span></label>
+            <label class="t-ginlampe"><input type="radio" name="sparte" id="sparte-ginlampe" value="Ginlampe"><span>Ginlampe</span></label>
+            <label class="t-ideen"><input type="radio" name="sparte" id="sparte-ideen" value="Ideen"><span>Ideen</span></label>
+            <label class="t-sonstiges"><input type="radio" name="sparte" id="sparte-sonstiges" value="Sonstiges"><span>Sonstiges</span></label>
+          </div>
+        </fieldset>
+      </div>
       <div class="field">
-        <label for="objekt">Objekt</label>
-        <input type="text" id="objekt" list="objekt-liste" autocomplete="off" placeholder="z. B. Feuerwache Krefeld">
-        <datalist id="objekt-liste"></datalist>
+        <label for="text">Beschreibung</label>
+        <textarea id="text" placeholder="z. B. Treppenhaus 2. OG nicht gewischt"></textarea>
+        <button class="ghost mic" type="button" id="mic" aria-pressed="false" hidden><span class="dot"></span><span id="mic-label">Diktieren</span></button>
       </div>
-    </div>
+      <button class="primary" type="submit" id="save">Speichern</button>
+    </form>
+  </details>
 
-    <div class="group" id="privat-felder" hidden>
-      <fieldset>
-        <legend>Untersparte</legend>
-        <div class="seg">
-          <label><input type="radio" name="sparte" id="sparte-einkauf" value="Einkauf" checked><span>Einkauf</span></label>
-          <label><input type="radio" name="sparte" id="sparte-haushalt" value="Haushalt"><span>Haushalt</span></label>
-          <label><input type="radio" name="sparte" id="sparte-termine" value="Termine"><span>Termine</span></label>
-          <label><input type="radio" name="sparte" id="sparte-ginlampe" value="Ginlampe"><span>Ginlampe</span></label>
-          <label><input type="radio" name="sparte" id="sparte-ideen" value="Ideen"><span>Ideen</span></label>
-          <label><input type="radio" name="sparte" id="sparte-sonstiges" value="Sonstiges"><span>Sonstiges</span></label>
-        </div>
-      </fieldset>
-    </div>
+  <p class="msg" id="msg" role="status" hidden></p>
+  <div class="msg warn queue" id="queue" hidden>
+    <p id="queue-text"></p>
+    <button class="ghost" type="button" id="queue-send">Jetzt übertragen</button>
+  </div>
 
-    <div class="field">
-      <label for="text">Beschreibung</label>
-      <textarea id="text" placeholder="z. B. Treppenhaus 2. OG nicht gewischt"></textarea>
-      <button class="ghost mic" type="button" id="mic" aria-pressed="false" hidden><span class="dot"></span><span id="mic-label">Diktieren</span></button>
-    </div>
-
-    <button class="primary" type="submit" id="save">Speichern</button>
-    <p class="msg" id="msg" role="status" hidden></p>
-    <div class="msg warn queue" id="queue" hidden>
-      <p id="queue-text"></p>
-      <button class="ghost" type="button" id="queue-send">Jetzt übertragen</button>
-    </div>
-  </form>
-
-  <section class="block" aria-labelledby="recent-h">
-    <div class="row">
-      <h2 id="recent-h">Letzte Einträge</h2>
-      <button class="ghost" type="button" id="reload">Anzeigen</button>
-    </div>
-    <p class="hint" id="recent-empty"></p>
-    <ul id="recent-list" hidden></ul>
+  <section class="group" aria-labelledby="open-h" style="gap:12px">
+    <h2 id="open-h">Offen</h2>
+    <div class="chips" id="chips"></div>
+    <ul id="open-list"></ul>
+    <p class="empty" id="open-empty" hidden></p>
   </section>
 
-  <details id="setup">
+  <details class="plain" id="done-box" hidden>
+    <summary id="done-sum">Erledigt</summary>
+    <ul id="done-list"></ul>
+  </details>
+
+  <details class="plain" id="setup">
     <summary>Einrichtung</summary>
     <div class="group">
       <div class="field">
@@ -188,30 +221,29 @@ details .group { margin-top: 12px; }
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var form = $("entry-form"), objekt = $("objekt"), text = $("text"), msg = $("msg");
-  var reloadBtn = $("reload"), list = $("recent-list"), empty = $("recent-empty"), datalist = $("objekt-liste");
+  var form = $("entry-form"), objekt = $("objekt"), text = $("text"), msg = $("msg"), composer = $("composer");
+  var reloadBtn = $("reload"), sub = $("sub"), chips = $("chips"), openList = $("open-list"), openEmpty = $("open-empty");
+  var doneBox = $("done-box"), doneList = $("done-list"), doneSum = $("done-sum"), datalist = $("objekt-liste");
   var queueBox = $("queue"), queueText = $("queue-text"), queueSend = $("queue-send");
   var urlInput = $("url"), setupMsg = $("setup-msg"), setup = $("setup"), mic = $("mic");
+  var TAGS = { beruflich: ["Mangel", "Aufgabe", "Notiz"], privat: ["Einkauf", "Haushalt", "Termine", "Ginlampe", "Ideen", "Sonstiges"] };
 
   function store(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
   function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  function loadJson(k) { try { var v = JSON.parse(load(k) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  function loadJson(k, fallback) { try { var v = JSON.parse(load(k)); return v == null ? fallback : v; } catch (e) { return fallback; } }
   function show(el, kind, t) { el.className = "msg " + kind; el.textContent = t; el.hidden = false; }
+  function isDone(s) { return /^erledigt/i.test(String(s || "").trim()); }
+  function slug(tag) { var s = String(tag || "").toLowerCase(); return /^[a-zäöü]+$/.test(s) ? "t-" + s.replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u") : ""; }
 
   var endpoint = load("mua.url") || "";
-  var queue = loadJson("mua.queue");
-  var recentObjects = loadJson("mua.objekte");
-  var sending = false;
+  // Warteliste: neue Einträge und Status-Änderungen, die die Tabelle noch nicht bestätigt hat.
+  var queue = (function () { var q = loadJson("mua.queue", []); return (Array.isArray(q) ? q : []).map(function (it) { return it && it.action ? it : { action: "add", entry: it }; }); })();
+  var cache = { beruflich: loadJson("mua.liste.beruflich", null), privat: loadJson("mua.liste.privat", null) };
+  var recentObjects = loadJson("mua.objekte", []); if (!Array.isArray(recentObjects)) recentObjects = [];
+  var filter = "", openKey = "", sending = false, loading = false, oldScript = false;
 
-  function renderObjects() {
-    datalist.textContent = "";
-    recentObjects.forEach(function (o) { var opt = document.createElement("option"); opt.value = o; datalist.appendChild(opt); });
-  }
-  function rememberObject(o) {
-    if (!o) return;
-    recentObjects = [o].concat(recentObjects.filter(function (x) { return x !== o; })).slice(0, 60);
-    store("mua.objekte", JSON.stringify(recentObjects)); renderObjects();
-  }
+  function renderObjects() { datalist.textContent = ""; recentObjects.forEach(function (o) { var opt = document.createElement("option"); opt.value = o; datalist.appendChild(opt); }); }
+  function rememberObject(o) { if (!o) return; recentObjects = [o].concat(recentObjects.filter(function (x) { return x !== o; })).slice(0, 60); store("mua.objekte", JSON.stringify(recentObjects)); renderObjects(); }
   renderObjects();
 
   var draft = load("mua.entwurf"); if (draft) text.value = draft;
@@ -219,158 +251,199 @@ details .group { margin-top: 12px; }
   text.addEventListener("input", function () { store("mua.entwurf", text.value); });
   objekt.addEventListener("input", function () { store("mua.objekt", objekt.value); });
 
-  function checked(name, fallback) { var el = form.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : fallback; }
+  function checked(name, fallback) { var el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : fallback; }
   function mode() { return checked("bereich", "beruflich"); }
+
+  // Zeilen des aktuellen Bereichs: Stand aus der Tabelle, darüber gelegt die noch wartenden Änderungen.
+  function rowsFor(b) {
+    var rows = ((cache[b] && cache[b].rows) || []).map(function (r) { return { z: r.z, datum: r.datum, objekt: r.objekt, art: r.art, text: r.text, status: r.status }; });
+    queue.forEach(function (it) {
+      if (it.action === "status" && it.bereich === b) rows.forEach(function (r) { if (r.z === it.zeile) r.status = it.status; });
+      if (it.action === "add" && it.entry.bereich === b) rows.push({ z: null, id: it.entry.id, datum: it.entry.datum, objekt: b === "privat" ? null : it.entry.objekt, art: it.entry.art, text: it.entry.text, status: "offen", wartet: true });
+    });
+    return rows.reverse();
+  }
+
+  function itemEl(r) {
+    var key = r.z != null ? "z" + r.z : "p" + r.id, done = isDone(r.status);
+    var li = document.createElement("li"); li.className = "item " + slug(r.art) + (done ? " done" : "") + (openKey === key ? " open" : "");
+    var c = document.createElement("button"); c.type = "button"; c.className = "check"; c.setAttribute("aria-pressed", done ? "true" : "false");
+    c.setAttribute("aria-label", done ? "Wieder öffnen" : "Als erledigt markieren");
+    var i = document.createElement("i"); i.textContent = "✓"; c.appendChild(i);
+    if (r.z == null || oldScript) c.disabled = true; else c.addEventListener("click", function () { toggle(r); });
+    var b = document.createElement("div"); b.className = "body"; b.tabIndex = 0; b.setAttribute("role", "button"); b.setAttribute("aria-expanded", openKey === key ? "true" : "false");
+    var meta = document.createElement("div"); meta.className = "meta";
+    var pill = document.createElement("span"); pill.className = "pill"; pill.textContent = r.art || "Eintrag"; meta.appendChild(pill);
+    if (r.objekt) { var o = document.createElement("span"); o.className = "obj"; o.textContent = r.objekt; meta.appendChild(o); }
+    var p = document.createElement("p"); p.className = "txt"; p.textContent = r.text || "";
+    b.appendChild(meta); b.appendChild(p);
+    if (openKey === key) { var m = document.createElement("p"); m.className = "more"; m.textContent = (r.datum || "") + " · " + (r.wartet ? "wartet auf Übertragung" : done ? "erledigt" : "offen"); b.appendChild(m); }
+    function flip() { openKey = openKey === key ? "" : key; render(); }
+    b.addEventListener("click", flip);
+    b.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); flip(); } });
+    li.appendChild(c); li.appendChild(b); return li;
+  }
+
+  function chipEl(label, tag, n) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "chip " + (tag ? slug(tag) : "all");
+    b.setAttribute("aria-pressed", filter === tag ? "true" : "false");
+    var d = document.createElement("span"); d.className = "dot"; var t = document.createElement("span"); t.textContent = label;
+    var c = document.createElement("span"); c.className = "n"; c.textContent = n;
+    b.appendChild(d); b.appendChild(t); b.appendChild(c);
+    b.addEventListener("click", function () { filter = tag; render(); });
+    return b;
+  }
+
+  function render() {
+    var b = mode(), rows = rowsFor(b);
+    var open = rows.filter(function (r) { return !isDone(r.status); }), done = rows.filter(function (r) { return isDone(r.status); });
+    var counts = {}; open.forEach(function (r) { counts[r.art] = (counts[r.art] || 0) + 1; });
+    if (filter && !counts[filter]) filter = "";
+    chips.textContent = "";
+    if (open.length) {
+      chips.appendChild(chipEl("Alle", "", open.length));
+      TAGS[b].forEach(function (tag) { if (counts[tag]) chips.appendChild(chipEl(tag, tag, counts[tag])); });
+    }
+    var shown = filter ? open.filter(function (r) { return r.art === filter; }) : open;
+    openList.textContent = ""; shown.forEach(function (r) { openList.appendChild(itemEl(r)); });
+    openList.hidden = !shown.length; openEmpty.hidden = !!shown.length;
+    if (!shown.length) openEmpty.textContent = !endpoint ? "Noch nicht mit der Tabelle verbunden. Trag unten bei „Einrichtung“ die Adresse des Google-Skripts ein."
+      : !cache[b] ? (loading ? "Liste wird geladen …" : "Die Liste ließ sich noch nicht laden.")
+      : "Nichts offen. Mit „Neuer Eintrag“ legst du den nächsten an.";
+    doneList.textContent = ""; done.slice(0, 50).forEach(function (r) { doneList.appendChild(itemEl(r)); });
+    doneBox.hidden = !done.length; doneSum.textContent = "Erledigt (" + done.length + ")";
+    var when = cache[b] && cache[b].t ? new Date(cache[b].t) : null;
+    sub.textContent = (open.length === 1 ? "1 offen" : open.length + " offen") + (when ? " · Stand " + pad(when.getHours()) + ":" + pad(when.getMinutes()) : "") + (navigator.onLine === false ? " · offline" : "");
+  }
+
   function applyMode() {
     var privat = mode() === "privat";
     $("beruf-felder").hidden = privat; $("privat-felder").hidden = !privat;
     $("page").setAttribute("data-mode", mode());
+    var tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute("content", privat ? "#7a3e9d" : "#0b6e7f");
     text.placeholder = privat ? "z. B. Geschenk für Samstag besorgen" : "z. B. Treppenhaus 2. OG nicht gewischt";
-    store("mua.bereich", mode());
-    list.textContent = ""; list.hidden = true; empty.hidden = false;
-    empty.textContent = endpoint
-      ? "Tippe auf „Anzeigen“ für die letzten fünf Einträge aus „" + (privat ? "Privat" : "Beruflich") + "“."
-      : "Noch nicht mit der Tabelle verbunden. Trag unten bei „Einrichtung“ die Adresse des Google-Skripts ein.";
-    reloadBtn.textContent = "Anzeigen";
+    store("mua.bereich", mode()); filter = ""; openKey = "";
+    render(); loadList(true);
   }
   if (load("mua.bereich") === "privat") $("bereich-privat").checked = true;
-  form.querySelectorAll('input[name="bereich"]').forEach(function (el) { el.addEventListener("change", applyMode); });
-  applyMode();
+  document.querySelectorAll('input[name="bereich"]').forEach(function (el) { el.addEventListener("change", applyMode); });
 
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function stamp() { var d = new Date(); return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "." + d.getFullYear() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
   function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+  function saveQueue() { return store("mua.queue", JSON.stringify(queue)); }
+  function getJson(u) { return fetch(u, { redirect: "follow" }).then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); }); }
+
+  function loadList(quiet) {
+    if (!endpoint) { if (!quiet) { setup.open = true; urlInput.focus(); } return; }
+    var b = mode(); loading = true; reloadBtn.classList.add("spin"); if (!cache[b]) render();
+    getJson(endpoint + "?alle=1&bereich=" + b).then(function (r) {
+      if (!r || !r.ok) throw new Error((r && r.error) || "Fehler");
+      oldScript = r.v !== 2;
+      var privat = b === "privat";
+      var rows = (Array.isArray(r.rows) ? r.rows : []).map(function (w, i) {
+        if (oldScript) w = [-(i + 1)].concat(w); // alte Skript-Fassung: nur Ansicht, kein Abhaken
+        return privat ? { z: w[0], datum: w[1], objekt: null, art: w[2], text: w[3], status: w[4] } : { z: w[0], datum: w[1], objekt: w[2], art: w[3], text: w[4], status: w[5] };
+      });
+      if (oldScript) rows.reverse();
+      cache[b] = { t: Date.now(), rows: rows }; store("mua.liste." + b, JSON.stringify(cache[b]));
+      if (oldScript) show(msg, "warn", "Das Google-Skript ist noch die alte Fassung. Abhaken geht erst, wenn du es aktualisiert hast.");
+    }).catch(function () {
+      if (!quiet) show(msg, "warn", "Die Liste ließ sich nicht neu laden. Du siehst den letzten bekannten Stand.");
+    }).then(function () { loading = false; reloadBtn.classList.remove("spin"); render(); });
+  }
+  reloadBtn.addEventListener("click", function () { msg.hidden = true; loadList(false); });
 
   function renderQueue(note) {
     if (!queue.length) { queueBox.hidden = true; return; }
     var n = queue.length;
-    queueText.textContent = (n === 1 ? "1 Eintrag wartet" : n + " Einträge warten") + " auf die Übertragung. " + (note || "");
-    queueSend.hidden = !endpoint;
-    queueBox.hidden = false;
+    queueText.textContent = (n === 1 ? "1 Änderung wartet" : n + " Änderungen warten") + " auf die Übertragung. " + (note || "");
+    queueSend.hidden = !endpoint; queueBox.hidden = false;
   }
-  function saveQueue() { return store("mua.queue", JSON.stringify(queue)); }
-
-  function post(entry) {
-    return fetch(endpoint, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "add", entry: entry }), redirect: "follow" })
+  function post(item) {
+    return fetch(endpoint, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(item), redirect: "follow" })
       .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); });
   }
-
-  // Überträgt wartende Einträge der Reihe nach. Ein Eintrag verlässt die Warteliste erst nach der Bestätigung der Tabelle.
+  // Überträgt der Reihe nach. Eine Änderung verlässt die Warteliste erst nach der Bestätigung der Tabelle.
   function flush(announce) {
     if (sending || !queue.length) return;
     if (!endpoint) { renderQueue("Verbinde die App unten bei „Einrichtung“ mit der Tabelle."); return; }
     if (navigator.onLine === false) { renderQueue("Kein Netz. Die App überträgt, sobald du wieder online bist."); return; }
     sending = true; queueSend.disabled = true;
-    var sent = 0;
+    var sent = 0, dropped = "";
     (function next() {
       if (!queue.length) return done(null);
-      post(queue[0]).then(function (r) {
-        if (!r || !r.ok) return done((r && r.error) || "Die Tabelle hat den Eintrag abgelehnt.");
-        queue.shift(); saveQueue(); sent++; next();
+      var item = queue[0];
+      post(item).then(function (r) {
+        if (r && r.ok) { queue.shift(); saveQueue(); sent++; return next(); }
+        var err = (r && r.error) || "Die Tabelle hat die Änderung abgelehnt.";
+        if (item.action === "status") { queue.shift(); saveQueue(); dropped = err; return next(); } // Haken verwerfen, Liste neu laden
+        done(err);
       }, function () { done("Keine Verbindung zur Tabelle. Die App versucht es später erneut."); });
     })();
     function done(error) {
-      sending = false; queueSend.disabled = false;
-      renderQueue(error || "");
-      if (error) { if (announce) show(msg, "warn", error + " Der Eintrag bleibt auf dem Gerät gespeichert."); }
-      else if (sent) { show(msg, "ok", sent === 1 ? "In der Tabelle gespeichert." : sent + " Einträge in der Tabelle gespeichert."); loadRecent(true); }
+      sending = false; queueSend.disabled = false; renderQueue(error || "");
+      if (error) { if (announce) show(msg, "warn", error + " Die Änderung bleibt auf dem Gerät gespeichert."); }
+      else if (dropped) show(msg, "warn", dropped);
+      else if (sent && announce) show(msg, "ok", "In der Tabelle gespeichert.");
+      if (sent || dropped) loadList(true); else render();
     }
+  }
+
+  function toggle(r) {
+    var b = mode(), status = isDone(r.status) ? "offen" : "erledigt";
+    queue = queue.filter(function (it) { return !(it.action === "status" && it.bereich === b && it.zeile === r.z); });
+    queue.push({ action: "status", bereich: b, zeile: r.z, datum: r.datum, text: r.text, status: status });
+    saveQueue(); msg.hidden = true; render(); renderQueue(""); flush(false);
   }
 
   form.addEventListener("submit", function (ev) {
     ev.preventDefault();
     var desc = text.value.trim();
     if (!desc) { show(msg, "warn", "Die Beschreibung fehlt noch."); text.focus(); return; }
-    var privat = mode() === "privat";
-    var obj = privat ? "" : objekt.value.trim();
+    var privat = mode() === "privat", obj = privat ? "" : objekt.value.trim();
     var entry = { id: newId(), bereich: mode(), datum: stamp(), art: privat ? checked("sparte", "Sonstiges") : checked("art", "Mangel"), objekt: obj, text: desc };
-    queue.push(entry);
+    queue.push({ action: "add", entry: entry });
     if (!saveQueue() && !endpoint) { queue.pop(); show(msg, "bad", "Dieses Gerät lässt kein Speichern zu und die Tabelle ist noch nicht verbunden. Der Text bleibt im Feld stehen."); return; }
-    text.value = ""; store("mua.entwurf", ""); rememberObject(obj);
-    show(msg, "ok", "Auf dem Gerät gespeichert, wird übertragen …");
-    renderQueue(""); flush(true);
+    text.value = ""; store("mua.entwurf", ""); rememberObject(obj); composer.open = false; filter = "";
+    show(msg, "ok", "Gespeichert, wird übertragen …");
+    render(); renderQueue(""); flush(true);
   });
   queueSend.addEventListener("click", function () { flush(true); });
-  window.addEventListener("online", function () { flush(false); });
-
-  function renderRecent(rows, privat) {
-    list.textContent = "";
-    if (!rows.length) { list.hidden = true; empty.hidden = false; empty.textContent = "In diesem Bereich gibt es noch keine Einträge."; return; }
-    rows.forEach(function (r) {
-      var c = privat ? [r[0], null, r[1], r[2], r[3]] : r;
-      var li = document.createElement("li");
-      var tone = String(c[2] || "").toLowerCase();
-      if (tone === "mangel" || tone === "aufgabe" || tone === "notiz") li.className = "t-" + tone;
-      var meta = document.createElement("div"); meta.className = "meta";
-      var pill = document.createElement("span"); pill.className = "pill"; pill.textContent = c[2] || "Eintrag"; meta.appendChild(pill);
-      if (c[1] !== null) { var o = document.createElement("span"); o.className = "obj"; o.textContent = c[1] || "ohne Objekt"; meta.appendChild(o); }
-      var when = document.createElement("span"); when.textContent = c[0] || ""; meta.appendChild(when);
-      if (c[4]) { var st = document.createElement("span"); st.textContent = c[4]; meta.appendChild(st); }
-      var p = document.createElement("p"); p.className = "txt"; p.textContent = c[3] || "";
-      li.appendChild(meta); li.appendChild(p); list.appendChild(li);
-    });
-    empty.hidden = true; list.hidden = false;
-  }
-
-  function loadRecent(quiet) {
-    if (!endpoint) { if (!quiet) { setup.open = true; urlInput.focus(); } return; }
-    var privat = mode() === "privat";
-    reloadBtn.disabled = true;
-    fetch(endpoint + "?bereich=" + mode(), { redirect: "follow" })
-      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
-      .then(function (r) {
-        if ((mode() === "privat") !== privat) return;
-        if (!r || !r.ok) throw new Error((r && r.error) || "Fehler");
-        renderRecent(Array.isArray(r.rows) ? r.rows : [], privat);
-        reloadBtn.textContent = "Neu laden";
-      })
-      .catch(function (e) { if (!quiet) { list.hidden = true; empty.hidden = false; empty.textContent = "Die Liste ließ sich nicht laden (" + (e && e.message || "keine Verbindung") + ")."; } })
-      .then(function () { reloadBtn.disabled = false; });
-  }
-  reloadBtn.addEventListener("click", function () { loadRecent(false); });
+  window.addEventListener("online", function () { render(); flush(false); loadList(true); });
+  window.addEventListener("offline", render);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) { flush(false); loadList(true); } });
 
   // Einrichtung: Adresse des Google-Skripts prüfen und merken.
-  urlInput.value = endpoint;
-  if (!endpoint) setup.open = true;
+  urlInput.value = endpoint; if (!endpoint) setup.open = true;
   $("url-save").addEventListener("click", function () {
     var u = urlInput.value.trim();
-    if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u)) {
-      show(setupMsg, "bad", "Das ist nicht die richtige Adresse. Sie beginnt mit https://script.google.com/macros/s/ und endet auf /exec."); return;
-    }
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u)) { show(setupMsg, "bad", "Das ist nicht die richtige Adresse. Sie beginnt mit https://script.google.com/macros/s/ und endet auf /exec."); return; }
     show(setupMsg, "warn", "Verbindung wird geprüft …");
-    fetch(u + "?ping=1", { redirect: "follow" })
-      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
-      .then(function (r) {
-        if (!r || !r.ok) throw new Error("Antwort unklar");
-        endpoint = u; store("mua.url", u);
-        show(setupMsg, "ok", "Verbunden mit der Tabelle „" + (r.name || "ohne Namen") + "“.");
-        applyMode(); renderQueue(""); flush(true);
-      })
-      .catch(function () { show(setupMsg, "bad", "Keine Antwort von dieser Adresse. Prüfe, ob beim Bereitstellen „Zugriff: Jeder“ gewählt ist und ob die Adresse vollständig kopiert wurde."); });
+    getJson(u + "?ping=1").then(function (r) {
+      if (!r || !r.ok) throw new Error("Antwort unklar");
+      endpoint = u; store("mua.url", u);
+      show(setupMsg, "ok", "Verbunden mit der Tabelle „" + (r.name || "ohne Namen") + "“.");
+      renderQueue(""); flush(true); loadList(true);
+    }).catch(function () { show(setupMsg, "bad", "Keine Antwort von dieser Adresse. Prüfe, ob beim Bereitstellen „Zugriff: Jeder“ gewählt ist und ob die Adresse vollständig kopiert wurde."); });
   });
 
   // Diktieren, wo der Browser es anbietet (Chrome auf Android und Windows).
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SR) {
-    mic.hidden = false;
-    var rec = null, base = "";
+    mic.hidden = false; var rec = null, base = "";
     mic.addEventListener("click", function () {
       if (rec) { rec.stop(); return; }
       rec = new SR(); rec.lang = "de-DE"; rec.interimResults = true; rec.continuous = true;
       base = text.value ? text.value.replace(/\s+$/, "") + " " : "";
-      rec.onresult = function (ev) {
-        var t = ""; for (var i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript;
-        text.value = base + t.replace(/^\s+/, ""); store("mua.entwurf", text.value);
-      };
-      rec.onerror = function (ev) {
-        if (ev.error === "not-allowed" || ev.error === "service-not-allowed") show(msg, "warn", "Das Mikrofon ist für diese App nicht erlaubt. Erlaube es in den Seiteneinstellungen des Browsers.");
-      };
+      rec.onresult = function (ev) { var t = ""; for (var i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript; text.value = base + t.replace(/^\s+/, ""); store("mua.entwurf", text.value); };
+      rec.onerror = function (ev) { if (ev.error === "not-allowed" || ev.error === "service-not-allowed") show(msg, "warn", "Das Mikrofon ist für diese App nicht erlaubt. Erlaube es in den Seiteneinstellungen des Browsers."); };
       rec.onend = function () { rec = null; mic.setAttribute("aria-pressed", "false"); $("mic-label").textContent = "Diktieren"; };
       try { rec.start(); mic.setAttribute("aria-pressed", "true"); $("mic-label").textContent = "Stopp"; } catch (e) { rec = null; }
     });
   }
 
-  renderQueue(""); flush(false);
+  applyMode(); renderQueue(""); flush(false);
   if ("serviceWorker" in navigator) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); }); }
 })();
 </script>
